@@ -37,6 +37,7 @@
         <h1 class="text-center white--text">Pourquoi utiliser Kewz? </h1>
         <v-row>
             <v-col cols="12" md="4" justify="center" >
+                <v-img></v-img>
                 <h3 class="text-center">Distanciation sociale</h3>
             </v-col>
             <v-col cols="12" md="4" justify="center" >
@@ -52,6 +53,7 @@
                 <h3 class="text-center">Open source</h3>
             </v-col>
         </v-row>
+        
 
     </v-container>
     </v-row>
