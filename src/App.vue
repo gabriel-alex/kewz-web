@@ -67,7 +67,7 @@
     <v-footer color="primary lighten-1" padless>
       <v-layout justify-center wrap>
         <v-flex primary lighten-2 py-4 text-center white--text xs12>
-          <strong>&copy; Kewz</strong> {{ new Date().getFullYear() }}  — <a href="https://github.com"><v-icon>mdi-github</v-icon></a>
+          <strong>&copy; Kewz</strong> {{ new Date().getFullYear() }}  — <a href="https://github.com/gabriel-alex/kewz-web"><v-icon>mdi-github</v-icon></a>
         </v-flex>
       </v-layout>
     </v-footer>
