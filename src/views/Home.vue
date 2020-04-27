@@ -41,20 +41,24 @@
       <v-container fluid primary lighten-1>
         <h1 class="text-center white--text">Pourquoi utiliser Kewz?</h1>
         <v-row>
-          <v-col cols="12" md="4" justify="center">
-            <v-img></v-img>
+          <v-col cols="12" md="4" align="center">
+            <v-img alt="gestion de l'attente logo" contain src="../assets/distanciation-logo.svg" width="100"></v-img>
             <h3 class="text-center white--text">Distanciation sociale</h3>
           </v-col>
-          <v-col cols="12" md="4" justify="center">
+          <v-col cols="12" md="4" align="center">
+            <v-img alt="gestion de l'attente logo" contain src="../assets/attente-logo.svg" width="100"></v-img>
             <h3 class="text-center white--text">Gestion de l'attente</h3>
           </v-col>
-          <v-col cols="12" md="4" justify="center">
+          <v-col cols="12" md="4" align="center">
+            <v-img alt="simple logo" contain src="../assets/simple-logo.svg" width="100"></v-img>
             <h3 class="text-center white--text">Simple</h3>
           </v-col>
-          <v-col cols="12" md="4" justify="center">
+          <v-col cols="12" md="6" align="center">
+            <v-img alt="free logo" contain src="../assets/free-logo.svg" width="100"></v-img>
             <h3 class="text-center white--text">Gratuit</h3>
           </v-col>
-          <v-col cols="12" md="4" justify="center">
+          <v-col cols="12" md="6" align="center">
+            <v-img alt="Open source logo" contain src="../assets/opensource-logo.svg" width="100"></v-img>
             <h3 class="text-center white--text">Open source</h3>
           </v-col>
         </v-row>
