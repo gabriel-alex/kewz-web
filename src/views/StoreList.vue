@@ -10,6 +10,7 @@
 
 <script>
 import StoreCard1 from "../components/StoreCard1";
+import StoreData from "../data/store.json";
 
 export default {
     components: {
@@ -17,56 +18,7 @@ export default {
     },
     data() {
 		return {
-			stores: [
-                { id:1,
-                name: "carrefour",
-                address:"",
-                postal_code:"54500",
-                city:"Vandoeuvre",
-                status:"open",
-                logo:"./assets/640px-Carrefour_2009.svg.png",
-                meantime: 10 },
-                { id: 2,
-                name: "match - Vélodrome",
-                address:"square de liège",
-                postal_code:"54500",
-                city:"Vandoeuvre",
-                status:"open",
-                logo:"./assets/logo-match.gif",
-                meantime: 20},
-                { id: 3,
-                name: "match - Vélodrome",
-                address:"square de liège",
-                postal_code:"54500",
-                city:"Vandoeuvre",
-                status:"open",
-                logo:"./assets/logo-match.gif",
-                meantime: 30},
-                { id:4,
-                name: "match - Vélodrome",
-                address:"square de liège",
-                postal_code:"54500",
-                city:"Vandoeuvre",
-                status:"open",
-                logo:"./assets/logo-match.gif",
-                meantime: 30},
-                { id:5,
-                name: "match - Vélodrome",
-                address:"square de liège",
-                postal_code:"54500",
-                city:"Vandoeuvre",
-                status:"open",
-                logo:"./assets/logo-match.gif",
-                meantime: 15},
-                { id:6,
-                name: "match - Vélodrome",
-                address:"square de liège",
-                postal_code:"54500",
-                city:"Vandoeuvre",
-                status:"open",
-                logo:"./assets/logo-match.gif",
-                meantime: 18}
-            ]
+			stores: StoreData
 		}
 	}
 }
