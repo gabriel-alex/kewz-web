@@ -12,6 +12,7 @@ firebase init //start the firebase project
 ### Compiles and hot-reloads for development
 ```
 npm run serve
+firebase serve // if firebase is setup
 ```
 
 ### Compiles and minifies for production
