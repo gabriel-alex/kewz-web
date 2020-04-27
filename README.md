@@ -1,8 +1,12 @@
-# kewz-web
+# Kewz-web
+
+Web page and web app for the project Kewz that aims to ease the management of waiting line in store and above all respect social distancing in epidemic context.
 
 ## Project setup
 ```
 npm install
+firebase log //if not already logged
+firebase init //start the firebase project
 ```
 
 ### Compiles and hot-reloads for development
