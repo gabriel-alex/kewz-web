@@ -4,6 +4,7 @@ import Home from './views/Home.vue'
 import Login from './views/Login'
 import Signup from './views/Signup'
 import Store from './views/StoreList'
+import StoreDetails from './views/StoreDetails'
 import NotFound from './views/NotFound'
 
 Vue.use(Router)
@@ -35,6 +36,12 @@ export default new Router({
 			path: '/store',
 			name: 'store',
 			component: Store
+		},
+		{
+			path: '/store/:id',
+			name: 'storeDetail',
+			component: StoreDetails,
+			props: true
 		},
 		{
 			path: '*',

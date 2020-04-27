@@ -6,7 +6,7 @@
     <v-card-actions>
       
         <v-spacer></v-spacer>
-        <v-btn text><v-icon>mdi-calendar</v-icon>Réserver </v-btn>
+        <v-btn text :to="{name : 'storeDetail', params: {id: store.id }}" ><v-icon>mdi-calendar</v-icon>Réserver </v-btn>
         <v-btn text>
                 <v-icon>mdi-bookmark</v-icon>
               </v-btn>
