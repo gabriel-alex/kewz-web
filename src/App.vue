@@ -32,7 +32,7 @@
 
       <v-spacer></v-spacer>
 
-      <div v-if="$vuetify.breakpoint.mdAndUp" >
+      <div v-if="$vuetify.breakpoint.mdAndUp && !logged" >
         <v-btn 
           v-for="link in links"
           :key="`${link.label}-header-link`"
@@ -45,17 +45,48 @@
         </v-btn>
       </div>
 
+      <div v-if="$vuetify.breakpoint.mdAndUp && logged" >
+        <v-btn 
+          v-for="link in links_logged"
+          :key="`${link.label}-header-link`"
+          text
+          rounded
+          :to="{ name: link.name }"
+          class="mr-2"
+        ><v-icon>{{ link.icon }}</v-icon>
+          {{ link.label }}
+        </v-btn>
+      </div>
+
     </v-app-bar>
 
     <v-content>
       <v-navigation-drawer v-model="drawer" absolute temporary>
-        <v-list dense>
+
+        <v-list dense v-if="!logged">
           <v-list-item
             v-for="link in links"
             :key="`${link.label}-drawer-item`"
             :to="{ name: link.name }"
             link
           >
+            <v-list-item-content>
+              <v-list-item-title>{{ link.label }}</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+        </v-list>
+
+        <v-list dense v-if="logged">
+          <v-list-item
+            v-for="link in links_logged"
+            :key="`${link.label}-drawer-item`"
+            :to="{ name: link.name }"
+            link
+          >
+          <v-list-item-icon>
+            <v-icon>{{ link.icon }}</v-icon>
+          </v-list-item-icon>
+
             <v-list-item-content>
               <v-list-item-title>{{ link.label }}</v-list-item-title>
             </v-list-item-content>
@@ -79,6 +110,7 @@ export default {
 	name: 'App',
 	data() {
 		return {
+      logged:false,
       drawer:false,
 			links: [
 				{
@@ -88,6 +120,23 @@ export default {
 				{
 					label: 'Login',
 					name: 'login'
+				}
+      ],
+      links_logged: [
+				{
+          icon: 'mdi-store',
+					label: 'Magasins',
+					name: 'store'
+        },
+        {
+          icon: 'mdi-notification-clear-all',
+					label: 'Files d\'attente',
+					name: 'queues'
+				},
+				{
+          icon : 'mdi-account-cog-outline',
+					label: 'Profil',
+					name: 'userSettings'
 				}
 			]
 		}
