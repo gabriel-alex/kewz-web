@@ -9,10 +9,11 @@ import NotFound from './views/NotFound'
 import Bookmark from './views/Bookmark'
 import UserSettings from './views/UserSetting'
 import Queues from './views/Queues'
+import store from './store/store.js';
 
 Vue.use(Router)
 
-export default new Router({
+let router = new Router({
 	mode: 'history',
 	base: process.env.BASE_URL,
 	routes: [
@@ -38,28 +39,43 @@ export default new Router({
 		{
 			path: '/store',
 			name: 'store',
-			component: Store
+			component: Store,
+			meta: {
+				requiresAuth: true
+			}
 		},
 		{
 			path: '/store/:id',
 			name: 'storeDetail',
 			component: StoreDetails,
-			props: true
+			props: true,
+			meta: {
+				requiresAuth: true
+			}
 		},
 		{
 			path:'/user/favorite',
 			name: 'bookmarks',
 			component: Bookmark,
+			meta: {
+				requiresAuth: true
+			}
 		},
 		{
 			path:'/user/queues',
 			name: 'queues',
 			component: Queues,
+			meta: {
+				requiresAuth: true
+			}
 		},
 		{
 			path:'/user/settings',
 			name: 'userSettings',
 			component: UserSettings,
+			meta: {
+				requiresAuth: true
+			}
 		},
 		{
 			path: '*',
@@ -68,3 +84,18 @@ export default new Router({
 		},
 	]
 })
+
+router.beforeEach((to, from, next) => {
+	if (to.matched.some(record => record.meta.requiresAuth)) {
+		store.dispatch("onChangeUserCheck")
+		if (store.getters.isLogged) {
+			next()
+			return
+		}
+		next('/login')
+	} else {
+		next()
+	}
+  });
+
+  export default router;

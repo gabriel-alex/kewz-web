@@ -25,5 +25,11 @@ npm run build
 npm run lint
 ```
 
+### Deploy on firebase
+```
+firebase deploy --only hosting // only for hosting
+firebase deploy // if other firebase services are integrated
+```
+
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).

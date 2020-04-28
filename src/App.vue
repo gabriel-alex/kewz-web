@@ -56,6 +56,17 @@
         ><v-icon>{{ link.icon }}</v-icon>
           {{ link.label }}
         </v-btn>
+
+        <v-btn 
+          key="deconnexion-header-link"
+          text
+          rounded
+          @click="logout"
+          :to="{name: 'home'}"
+          class="mr-2"
+        ><v-icon>mdi-exit-to-app</v-icon>
+          Deconnexion
+        </v-btn>
       </div>
 
     </v-app-bar>
@@ -91,6 +102,21 @@
               <v-list-item-title>{{ link.label }}</v-list-item-title>
             </v-list-item-content>
           </v-list-item>
+
+          <v-list-item
+            key="deconnexion-drawer-item"
+            @click="logout"
+            link
+            :to="{name: 'home'}"
+          >
+          <v-list-item-icon>
+            <v-icon>mdi-exit-to-app</v-icon>
+          </v-list-item-icon>
+
+            <v-list-item-content>
+              <v-list-item-title>Deconnexion</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
         </v-list>
       </v-navigation-drawer>
       <router-view></router-view>
@@ -110,7 +136,6 @@ export default {
 	name: 'App',
 	data() {
 		return {
-      logged:false,
       drawer:false,
 			links: [
 				{
@@ -137,9 +162,18 @@ export default {
           icon : 'mdi-account-cog-outline',
 					label: 'Profil',
 					name: 'userSettings'
-				}
+        }
 			]
 		}
-	}
+  },
+  computed:{
+    logged: function(){
+      return this.$store.getters.isLogged}
+  },
+  methods:{
+    logout(){
+      this.$store.dispatch("signOut")
+    }
+  }
 }
 </script>
