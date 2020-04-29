@@ -59,18 +59,18 @@ export default new Vuex.Store({
     createUser({ commit }, userInfo) {
       firebase
         .auth()
-        .createUserWithEmailAndPassword(userInfo.email, userInfo.password)
-        .catch(function(error) {
-          console.log(error);
-          commit("SET_ERROR", { msg: error.message, code: error.code });
-        });
-      firebase
-        .auth()
-        .currentUser.updateProfile({
-          displayName: "Jane Q. User",
-        })
-        .then(function() {
-          // Update successful.
+        .createUserWithEmailAndPassword(userInfo.email, userInfo.password).then(
+          (result) => {
+            result.user.updateProfile({
+              displayName: userInfo.name
+            }).catch(function(error) {
+              console.log(error);
+              commit("SET_ERROR", { msg: error.message, code: error.code })
+            });
+            commit("SET_USER_DATA", result.user);
+            commit("SET_LOGGED_IN", true);
+            router.push({ name: "store" });
+          
         })
         .catch(function(error) {
           console.log(error);
