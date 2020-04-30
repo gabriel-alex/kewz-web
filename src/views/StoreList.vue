@@ -10,16 +10,23 @@
 
 <script>
 import StoreCard1 from "../components/StoreCard1";
-import StoreData from "../data/store.json";
 
 export default {
     components: {
         StoreCard1,
     },
-    data() {
-		return {
-			stores: StoreData
-		}
-	}
+    computed:{
+        stores: function(){
+            return this.$store.getters.companies
+        }
+    },
+    methods:{
+        getcompanies(){
+            this.$store.dispatch("getCompanies")
+        }
+    },
+    beforeMount(){
+    this.getcompanies()
+ },
 }
 </script>
