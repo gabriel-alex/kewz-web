@@ -6,7 +6,7 @@
     </v-card-title>
     <v-card-text>
       <v-form>
-        <v-text-field v-model="email" label="E-mail" prepend-icon="mdi-account-circle" />
+        <v-text-field v-model="email" :rules="emailRules" label="E-mail" prepend-icon="mdi-account-circle" />
         <v-text-field
           v-model="password"
           :type="showPassword ? 'text' : 'password'"
@@ -19,9 +19,9 @@
     </v-card-text>
     <v-divider></v-divider>
     <v-card-actions>
-      <v-btn color="success" :to="{name: 'signup'}">Créer un compte</v-btn>
+      <v-btn color="info" :to="{name: 'signup'}">Créer un compte</v-btn>
       <v-spacer></v-spacer>
-      <v-btn color="info" @click="login" >Se connecter</v-btn>
+      <v-btn color="success" @click="login" >Se connecter</v-btn>
     </v-card-actions>
   </v-card>
 </template>
@@ -35,6 +35,17 @@ export default {
       showPassword: false,
       email: "",
       password: "",
+      emailRules: [
+      value => !!value || "Email is required",
+      value => value.indexOf("@") !== 0 || "Email should have a username",
+      value => value.includes("@") || "Email should include an @ symbol.",
+      /*value =>
+        value.indexOf(".") - value.indexOf("@") > 1 ||
+        "Email should contain a valid domain.",
+      value =>
+        value.indexOf(".") <= value.lenght - 3 ||
+        "Email should contain a valid domain extension."*/
+    ],
     };
   },
   computed: {

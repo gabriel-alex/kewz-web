@@ -9,24 +9,22 @@
         v-if="$vuetify.breakpoint.smAndDown"
         @click.stop="drawer = !drawer"
       ></v-app-bar-nav-icon>
-      <div class="d-flex align-center">
+      <div class="d-flex">
         <v-img
           alt="Vuetify Logo"
           class="shrink mr-2"
           contain
-          src="https://cdn.vuetifyjs.com/images/logos/vuetify-logo-dark.png"
+          src="@/assets/KEWZ-logo-white.png"
           transition="scale-transition"
           width="40"
         />
-        <h1>Kewz</h1>
-
         <v-img
           alt="Vuetify Name"
-          class="shrink mt-1 hidden-sm-and-down"
+          class="mt-1 hidden-sm-and-down"
           contain
           min-width="100"
-          src="https://cdn.vuetifyjs.com/images/logos/vuetify-name-dark.png"
-          width="100"
+          src="@/assets/KEWZ-white.png"
+          width="130"
         />
       </div>
 
@@ -123,7 +121,7 @@
     </v-content>
     <v-footer color="primary lighten-1" padless>
       <v-layout justify-center wrap>
-        <v-flex primary lighten-2 py-4 text-center white--text xs12>
+        <v-flex primary py-4 text-center white--text xs12>
           <strong>&copy; Kewz</strong> {{ new Date().getFullYear() }}  — <a href="https://github.com/gabriel-alex/kewz-web"><v-icon>mdi-github</v-icon></a>
         </v-flex>
       </v-layout>
