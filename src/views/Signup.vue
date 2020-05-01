@@ -101,13 +101,15 @@ export default {
         this.$store.dispatch("createUser", {
           email: this.email,
           password: this.password,
-          name: this.companyName
+          name: this.companyName,
+          company: true
         });
       } else {
         this.$store.dispatch("createUser", {
           email: this.email,
           password: this.password,
-          name: this.userName
+          name: this.userName,
+          company: false
         });
       }
     },

@@ -4,6 +4,7 @@ import router from "../router";
 import firebase from "../services/firebase";
 
 Vue.use(Vuex);
+var addCompanyRole = firebase.functions().httpsCallable("addCompanyRole");
 
 export default new Vuex.Store({
   state: {
@@ -12,6 +13,7 @@ export default new Vuex.Store({
     user: {
       loggedIn: false,
       data: null,
+      role: {}
     },
     loggedIn: false,
     tokenId: null,
@@ -42,6 +44,9 @@ export default new Vuex.Store({
     SET_USER_DATA(state, data) {
       state.user.data = data;
     },
+    SET_USER_ROLE(state, data) {
+      state.user.role.company = data.value
+    },
     SET_ERROR(state, error) {
       state.error = error;
     },
@@ -53,10 +58,13 @@ export default new Vuex.Store({
     FLUSH_COMPANIES(state) {
       state.companies = [];
     },
+    FLUSH_ERROR(state) {
+      state.error = null;
+    },
     ADD_COMPANY(state, value) {
       var storedata = value.store;
       storedata.id = value.id;
-      state.companies = []
+      state.companies = [];
       state.companies.push(storedata);
     },
   },
@@ -67,6 +75,13 @@ export default new Vuex.Store({
         .auth()
         .signInWithEmailAndPassword(authData.email, authData.password)
         .then((res) => {
+          firebase.auth().currentUser.getIdTokenResult().then((idTokenRes)=>{
+            if(idTokenRes.claims.company){
+              commit("SET_USER_ROLE", {role: 'company', value: true});
+            }else{
+              commit("SET_USER_ROLE", {role: 'company', value: false});
+            }
+          })
           console.log(res);
           commit("SET_USER_DATA", res.user);
           commit("SET_LOGGED_IN", true);
@@ -90,6 +105,12 @@ export default new Vuex.Store({
               console.log(error);
               commit("SET_ERROR", { msg: error.message, code: error.code });
             });
+          addCompanyRole({ email: userInfo.email }).then(()=> {
+            commit("SET_USER_ROLE", {role: 'company', value: true});
+          }).catch(function(error) {
+            console.log(error);
+            commit("SET_ERROR", { msg: error.message, code: error.code });
+          });
           commit("SET_USER_DATA", result.user);
           commit("SET_LOGGED_IN", true);
           router.push({ name: "store" });
@@ -113,6 +134,9 @@ export default new Vuex.Store({
           commit("SET_ERROR", { msg: error.message, code: error.code });
         });
     },
+    onChangeErrorFlush({commit}){
+      commit("FLUSH_ERROR")
+    },
     onChangeUserCheck({ commit }) {
       firebase.auth().onAuthStateChanged(function(user) {
         if (user) {
@@ -130,7 +154,7 @@ export default new Vuex.Store({
         .collection("companies")
         .get()
         .then((snapshot) => {
-          commit("FLUSH_COMPANIES")
+          commit("FLUSH_COMPANIES");
           snapshot.forEach((doc) => {
             commit("ADD_COMPANIES", { id: doc.id, store: doc.data() });
 
