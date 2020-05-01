@@ -86,6 +86,7 @@ let router = new Router({
 })
 
 router.beforeEach((to, from, next) => {
+	//store.dispatch("onChangeErrorFlush")
 	if (to.matched.some(record => record.meta.requiresAuth)) {
 		store.dispatch("onChangeUserCheck")
 		if (store.getters.isLogged) {

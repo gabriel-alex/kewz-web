@@ -4,6 +4,10 @@ import router from "../router";
 import firebase from "../services/firebase";
 
 Vue.use(Vuex);
+var storageRef = firebase.storage().ref();
+
+
+//cloud functions
 var addCompanyRole = firebase.functions().httpsCallable("addCompanyRole");
 
 export default new Vuex.Store({
@@ -64,7 +68,7 @@ export default new Vuex.Store({
     ADD_COMPANY(state, value) {
       var storedata = value.store;
       storedata.id = value.id;
-      state.companies = [];
+      storedata.image = value.image;
       state.companies.push(storedata);
     },
   },
@@ -156,9 +160,13 @@ export default new Vuex.Store({
         .then((snapshot) => {
           commit("FLUSH_COMPANIES");
           snapshot.forEach((doc) => {
-            commit("ADD_COMPANIES", { id: doc.id, store: doc.data() });
+            var imageRef= storageRef.child('companies').child(doc.data().image_url)
+            imageRef.getDownloadURL().then(function(url){
+              commit("ADD_COMPANY", { id: doc.id, store: doc.data(), image:  url});
+            })
+            
 
-            console.log(doc.id, "=>", doc.data());
+            console.log(doc.id, "=>", imageRef.fullPath);
           });
         })
         .catch((err) => {

@@ -1,6 +1,6 @@
 <template>
   <v-card>
-    <v-img :src= store.image_url ></v-img>
+    <v-img :src= store.image ></v-img>
     <v-card-title>{{ store.name }}</v-card-title>
     <v-card-subtitle >{{ store.address }} - {{store.city}} </v-card-subtitle>
     <v-card-actions>
