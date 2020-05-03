@@ -14,9 +14,9 @@
             v-if="isCompany"
             label="Nom de l'entreprise"
             v-model="companyName"
-            :rules="nameRules"
+            :rules="companynameRules"
           ></v-text-field>
-          <v-file-input v-if="isCompany" label="Ajouter le logo de l'entreprise"></v-file-input>
+          <v-file-input v-if="isCompany" v-model="logo" accept="image/*" label="Ajouter le logo de l'entreprise"></v-file-input>
           <v-text-field
             prepend-icon="mdi-account"
             v-if="!isCompany"
@@ -65,17 +65,17 @@ export default {
     showPassword: false,
     isCompany: false,
     companyName: "",
+    companynameRules: [
+      value => !!value || "Vous devez donner votre nom d'entreprise. Il pourra etre modifié ultérieurement. ",
+    ],
     userName: "",
+    logo: "",
     nameRules: [
-      value =>
-        !!value ||
-        "Vous devez definir un nom. Il pourra etre modifié ultérieurement. "
+      value => !!value || "Vous devez definir un nom. Il pourra etre modifié ultérieurement. ",
     ],
     agreeToTerms: false,
     agreeToTermsRules: [
-      value =>
-        !!value ||
-        "You must agree to the terms and conditions to signup for an account."
+      value => !!value || "You must agree to the terms and conditions to signup for an account.",
     ],
     email: "",
     emailRules: [
@@ -102,7 +102,11 @@ export default {
           email: this.email,
           password: this.password,
           name: this.companyName,
-          company: true
+          company: true,
+          address: "",
+          city:"",
+          postalcode:"", 
+          logo: this.logo,
         });
       } else {
         this.$store.dispatch("createUser", {

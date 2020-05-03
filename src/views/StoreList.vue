@@ -1,7 +1,7 @@
 <template>
     <v-container>
         <v-row>
-            <v-col cols="12" lg="3" md="4" sm="6" v-for="store in stores" :key="`store-${store.id}`">
+            <v-col class="pa-3 d-flex flex-column" cols="12" lg="3" md="4" sm="6" v-for="store in stores" :key="`store-${store.id}`">
                 <StoreCard1 :store=store></StoreCard1>
             </v-col>
         </v-row>

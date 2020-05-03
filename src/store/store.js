@@ -6,7 +6,6 @@ import firebase from "../services/firebase";
 Vue.use(Vuex);
 var storageRef = firebase.storage().ref();
 
-
 //cloud functions
 var addCompanyRole = firebase.functions().httpsCallable("addCompanyRole");
 
@@ -17,12 +16,8 @@ export default new Vuex.Store({
     user: {
       loggedIn: false,
       data: null,
-      role: {}
+      role: {},
     },
-    loggedIn: false,
-    tokenId: null,
-    userId: null,
-    email: null,
   },
   getters: {
     user(state) {
@@ -46,10 +41,18 @@ export default new Vuex.Store({
       state.user.loggedIn = value;
     },
     SET_USER_DATA(state, data) {
-      state.user.data = data;
+      state.user.data= {}
+      state.user.data.email = data.email;
+      state.user.data.displayName = data.displayName;
+      state.user.data.emailVerified = data.emailVerified;
+      state.user.data.isAnonymous = data.isAnonymous;
+      state.user.data.uid = data.uid;
+      state.user.data.phoneNumber = data.phoneNumber;
+      state.user.data.photoURL = data.photoURL;
+      state.user.data.refreshToken = data.refreshToken;
     },
     SET_USER_ROLE(state, data) {
-      state.user.role.company = data.value
+      state.user.role.company = data.value;
     },
     SET_ERROR(state, error) {
       state.error = error;
@@ -79,13 +82,16 @@ export default new Vuex.Store({
         .auth()
         .signInWithEmailAndPassword(authData.email, authData.password)
         .then((res) => {
-          firebase.auth().currentUser.getIdTokenResult().then((idTokenRes)=>{
-            if(idTokenRes.claims.company){
-              commit("SET_USER_ROLE", {role: 'company', value: true});
-            }else{
-              commit("SET_USER_ROLE", {role: 'company', value: false});
-            }
-          })
+          firebase
+            .auth()
+            .currentUser.getIdTokenResult()
+            .then((idTokenRes) => {
+              if (idTokenRes.claims.company) {
+                commit("SET_USER_ROLE", { role: "company", value: true });
+              } else {
+                commit("SET_USER_ROLE", { role: "company", value: false });
+              }
+            });
           console.log(res);
           commit("SET_USER_DATA", res.user);
           commit("SET_LOGGED_IN", true);
@@ -101,6 +107,7 @@ export default new Vuex.Store({
         .auth()
         .createUserWithEmailAndPassword(userInfo.email, userInfo.password)
         .then((result) => {
+          // update name on auth service
           result.user
             .updateProfile({
               displayName: userInfo.name,
@@ -109,12 +116,51 @@ export default new Vuex.Store({
               console.log(error);
               commit("SET_ERROR", { msg: error.message, code: error.code });
             });
-          addCompanyRole({ email: userInfo.email }).then(()=> {
-            commit("SET_USER_ROLE", {role: 'company', value: true});
-          }).catch(function(error) {
-            console.log(error);
-            commit("SET_ERROR", { msg: error.message, code: error.code });
-          });
+          // update role on auth service
+          addCompanyRole({ email: userInfo.email })
+            .then(() => {
+              commit("SET_USER_ROLE", { role: "company", value: true });
+            })
+            .catch(function(error) {
+              console.log(error);
+              commit("SET_ERROR", { msg: error.message, code: error.code });
+            });
+          // load image
+          if (userInfo.logo) {
+            var image_name = userInfo.logo.name;
+            const fr = new FileReader();
+            fr.readAsDataURL(userInfo.logo);
+            fr.addEventListener("load", () => {
+              //var imageUrl = fr.result
+              var imageFile = userInfo.logo; // this is an image file that can be sent to server...
+              storageRef
+                .child(`companies/${image_name}`)
+                .put(imageFile)
+                .then(function() {
+                }).catch((err) => {
+                  console.log("Error while uploading the image", err);
+                });
+            });
+          }else{
+            image_name = ""
+          }
+          // add data on firebase
+          var company_data = {
+            address: userInfo.address,
+            city: userInfo.city,
+            postalcode: userInfo.postalcode,
+            name: userInfo.name,
+            image_name: image_name,
+          };
+
+          firebase
+            .firestore()
+            .collection("companies")
+            .doc(result.user.uid)
+            .set(company_data)
+            .catch((err) => {
+              console.log("Error setting Company info in firestore", err);
+            });
           commit("SET_USER_DATA", result.user);
           commit("SET_LOGGED_IN", true);
           router.push({ name: "store" });
@@ -138,8 +184,8 @@ export default new Vuex.Store({
           commit("SET_ERROR", { msg: error.message, code: error.code });
         });
     },
-    onChangeErrorFlush({commit}){
-      commit("FLUSH_ERROR")
+    onChangeErrorFlush({ commit }) {
+      commit("FLUSH_ERROR");
     },
     onChangeUserCheck({ commit }) {
       firebase.auth().onAuthStateChanged(function(user) {
@@ -160,13 +206,32 @@ export default new Vuex.Store({
         .then((snapshot) => {
           commit("FLUSH_COMPANIES");
           snapshot.forEach((doc) => {
-            var imageRef= storageRef.child('companies').child(doc.data().image_url)
-            imageRef.getDownloadURL().then(function(url){
-              commit("ADD_COMPANY", { id: doc.id, store: doc.data(), image:  url});
-            })
-            
-
-            console.log(doc.id, "=>", imageRef.fullPath);
+            if (doc.data().image_name) {
+              var imageRef = storageRef
+                .child("companies")
+                .child(doc.data().image_name);
+              imageRef.getDownloadURL().then(function(url) {
+                commit("ADD_COMPANY", {
+                  id: doc.id,
+                  store: doc.data(),
+                  image: url,
+                });
+              }).catch(function(error) {
+                console.log("error while retrieving image ",error);
+                //commit("SET_ERROR", { msg: error.message, code: error.code });
+                commit("ADD_COMPANY", {
+                  id: doc.id,
+                  store: doc.data(),
+                  image: null,
+                });
+              });
+            } else {
+              commit("ADD_COMPANY", {
+                id: doc.id,
+                store: doc.data(),
+                image: null,
+              });
+            }
           });
         })
         .catch((err) => {

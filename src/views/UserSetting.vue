@@ -9,11 +9,11 @@
         label="Nom de l'entreprise"
         v-model="companyName"
       />
-      <v-file-input v-if="user.role.company" label="Ajouter le logo de l'entreprise"></v-file-input>
-      <v-text-field prepend-icon="mdi-account" v-if="user.role.company" label="Adresse" v-model="address" />
-      <v-text-field prepend-icon="mdi-account" v-if="user.role.company" label="Ville" v-model="city" />
-      <v-text-field
-        prepend-icon="mdi-account"
+      <v-file-input v-if="user.role.company" label="Ajouter le logo de l'entreprise"/>
+      <v-text-field prepend-icon="mdi-map-marker" v-if="user.role.company" label="Adresse" v-model="address" />
+      <v-text-field sm="6" prepend-icon="mdi-city" v-if="user.role.company" label="Ville" v-model="city" />
+      <v-text-field sm="6"
+      type="number"
         v-if="user.role.company"
         label="Code postal"
         v-model="postal_code"
@@ -22,8 +22,7 @@
         prepend-icon="mdi-account"
         v-if="!user.role.company"
         label="Nom d'utilisateur"
-        v-model="userName"
-      ></v-text-field>
+        v-model="userName"/>
       <v-text-field prepend-icon="mdi-email" label="Email" type="email" v-model="email"></v-text-field>
     </v-form>
     <v-spacer></v-spacer>
