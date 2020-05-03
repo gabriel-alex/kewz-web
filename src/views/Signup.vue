@@ -47,7 +47,7 @@
             required
           ></v-checkbox>
 
-          <v-btn class="mr-4" @click="signUp" color="primary" :disabled="!formValidity">Submit</v-btn>
+          <v-btn class="mr-4" @click="signUp" color="primary" :disabled="!formValidity">Créer</v-btn>
           <!--
                 <v-btn class="mr-4" color="success" @click="validateForm">Validate Form</v-btn>
                 <v-btn class="mr-4" color="warning" @click="resetValidation">Reset Validation</v-btn>

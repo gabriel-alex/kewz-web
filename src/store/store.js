@@ -239,6 +239,7 @@ export default new Vuex.Store({
         });
     },
     getCompany({ commit }, docID) {
+      commit("FLUSH_COMPANIES");
       firebase
         .firestore()
         .collection("companies")
@@ -249,13 +250,82 @@ export default new Vuex.Store({
             commit("SET_ERROR", { msg: "No such document!", code: "404" });
             console.log("No such document!");
           } else {
-            commit("ADD_COMPANY", { id: docID, store: doc.data() });
-            console.log("Document data:", doc.data());
+            if (doc.data().image_name) {
+              var imageRef = storageRef
+                .child("companies")
+                .child(doc.data().image_name);
+              imageRef.getDownloadURL().then(function(url) {
+                commit("ADD_COMPANY", {
+                  id: doc.id,
+                  store: doc.data(),
+                  image: url,
+                });
+              }).catch(function(error) {
+                console.log("Error while retrieving image",error);
+                //commit("SET_ERROR", { msg: error.message, code: error.code });
+                commit("ADD_COMPANY", {
+                  id: doc.id,
+                  store: doc.data(),
+                  image: null,
+                });
+              });
+            }
+            //commit("ADD_COMPANY", { id: docID, store: doc.data() });
+            //console.log("Document data:", doc.data());
           }
         })
         .catch((err) => {
           console.log("Error getting documents", err);
         });
     },
+    updateCompany(companyData){
+      var company_data= {address: companyData.address, name : companyData.name, city: companyData.city, postalcode: companyData.postalcode }
+      // load image
+      if (companyData.logo) {
+        var image_name = companyData.logo.name;
+        const fr = new FileReader();
+        fr.readAsDataURL(companyData.logo);
+        fr.addEventListener("load", () => {
+          //var imageUrl = fr.result
+          var imageFile = companyData.logo; // this is an image file that can be sent to server...
+          storageRef
+            .child(`companies/${image_name}`)
+            .put(imageFile)
+            .then(function() {
+              company_data.image_name = image_name
+              storageRef.child(`companies/${this.companies[0].image_name}`).delete().catch(function(err){
+                console.log("Error While deleting the previous logo", err)
+              })
+            }).catch((err) => {
+              console.log("Error while uploading the image", err);
+            });
+        });
+      }
+
+      firebase
+        .firestore()
+        .collection("companies")
+        .doc(companyData.uid).
+        update(company_data).catch((err)=> {
+          console.log("Error while updating information about company",err)
+        });
+
+        
+        var user = firebase.auth().currentUser
+        if(companyData.name != user.data().displayName){
+          user.updateProfile({
+            displayName: companyData.name
+          }).catch((err)=>{
+            console.log("Error while updating name", err)
+          })
+        }
+        
+        if(companyData.email != user.data().email){
+          user.updateEmail(companyData).catch((err)=> {
+            console.log("Error while updating email", err)
+          })
+        }
+        
+    }
   },
 });
