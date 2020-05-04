@@ -79,7 +79,7 @@
             :rules="agreeToDeleteRules"
             required
           ></v-checkbox>
-        <v-btn class="mr-4" @click="updateCompany" :disabled="!formValidity" color="error">Supprimer</v-btn>
+        <v-btn class="mr-4" @click="deleteAccount" :disabled="!formValidity" color="error">Supprimer</v-btn>
         </v-form>
     <!-- Afficher une boite de confirmation 
         Supprimer les données 
@@ -111,14 +111,17 @@ export default {
     }
   }),
    methods: {
-     getPorfilInfo(){
+     getProfilInfo(){
        if(this.user.role && this.user.role.company ){
          this.$store.dispatch("getCompany", this.user.data.uid)
        }
        
      },
      updateCompany(){
-       this.$store.dispatch("updateCompany", {uid: this.user.data.uid, name: this.company.name, address: this.company.address, city: this.company.city, postalcode: this.company.postalcode, logo: this.company.image_name, email: this.company.email})
+       this.$store.dispatch("updateCompany", {uid: this.user.data.uid, name: this.company.name, address: this.company.address, city: this.company.city, postalcode: this.company.postalcode, logo: this.company.logo, email: this.user.data.email, prev_image: this.company.image_name})
+     },
+     deleteProfil(){
+       this.$store.dispatch("deleteAccount")
      }
    },
    computed:{
@@ -132,7 +135,7 @@ export default {
       return this.$store.getters.error},
    },
    beforeMount(){
-    this.getPorfilInfo()
+    this.getProfilInfo()
    },
 };
 </script>
