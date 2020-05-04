@@ -12,6 +12,7 @@ var addCompanyRole = firebase.functions().httpsCallable("addCompanyRole");
 export default new Vuex.Store({
   state: {
     companies: [],
+    alerts: [],
     error: null,
     user: {
       loggedIn: false,
@@ -35,6 +36,9 @@ export default new Vuex.Store({
     company(state) {
       return state.companies[0];
     },
+    alerts(state){
+      return state.alerts
+    }
   },
   mutations: {
     SET_LOGGED_IN(state, value) {
@@ -77,6 +81,16 @@ export default new Vuex.Store({
       storedata.image = value.image;
       state.companies.push(storedata);
     },
+    ADD_ALERT(state, value){
+      var min = Math.ceil(100);
+      var max = Math.floor(999);
+      var randomid = Math.floor(Math.random() * (max - min)) + min
+      var alert = {id: randomid, msg: value.msg, type: value.type, duration: value.duration }
+      state.alerts.push(alert)
+    },
+    DEL_ALERT(state,value){
+      state.alerts.splice(obj=>obj.id == value)
+    }
   },
   actions: {
     // get user from firebase auth
@@ -103,6 +117,7 @@ export default new Vuex.Store({
         .catch(function(error) {
           console.log(error);
           commit("SET_ERROR", { msg: error.message, code: error.code });
+          commit("ADD_ALERT", { msg: error.message, type: "error", duration: 4000 });
         });
     },
     createUser({ commit }, userInfo) {
@@ -360,6 +375,9 @@ export default new Vuex.Store({
           console.log("Error while updating email", err);
         });
       }
+    },
+    deleteAlert({commit}, id){
+      commit("DEL_ALERT", id)
     },
     deleteAccount() {
       var user = firebase.auth().currentUser;

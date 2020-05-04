@@ -1,6 +1,7 @@
 <template>
   <v-container>
-    <v-img src="../assets/logo-match.gif"></v-img>
+    <v-img height="200" v-if="!store.image" src= "@/assets/missing_image.png" />
+    <v-img height="200" v-if="store.image" :src= store.image />
     <v-row primary lighten-1>
       <v-col>
         <h1>{{ store.name}}</h1>
@@ -22,6 +23,7 @@
             item-value="value"
             item-text="display"
             :items="hours"
+            v-model="bookedTime"
             label="Heure"
           ></v-select>
           <v-dialog v-model="dialog" max-width="300px">
@@ -44,7 +46,7 @@
               </v-card-actions>
             </v-card>
           </v-dialog>
-          <v-btn type="submit" color="primary" :disabled="!formValidity">Reserver</v-btn>
+          <v-btn color="primary" :disabled="!formValidity">Reserver</v-btn>
         </v-form>
       </v-col>
     </v-row>
@@ -56,11 +58,11 @@ export default {
   props: ["id"],
   data() {
     return {
-      dialog: "",
+      bookedTime:"",
+      dialog: false,
       date: new Date().toISOString().substr(0, 10),
       dateFormatted: this.formatDate(new Date().toISOString().substr(0, 10)),
       formValidity: false,
-      items: ["Foo", "Bar", "Fizz", "Buzz"],
       hours: [
         {
           disabled: true, // change
@@ -95,6 +97,9 @@ export default {
     },
     loadStoreData(id) {
       this.$store.dispatch("getCompany", id);
+    },
+    book(){
+      
     }
   },
   watch: {

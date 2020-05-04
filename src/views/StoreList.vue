@@ -2,19 +2,16 @@
     <v-container>
         <v-row>
             <v-col class="pa-3 d-flex flex-column" cols="12" lg="3" md="4" sm="6" v-for="store in stores" :key="`store-${store.id}`">
-                <StoreCard1 :store=store></StoreCard1>
+                <BaseStoreCard1 :store=store></BaseStoreCard1>
             </v-col>
         </v-row>
     </v-container>
 </template>
 
 <script>
-import StoreCard1 from "../components/StoreCard1";
+//import StoreCard1 from "../components/StoreCard1";
 
 export default {
-    components: {
-        StoreCard1,
-    },
     computed:{
         stores: function(){
             return this.$store.getters.companies
