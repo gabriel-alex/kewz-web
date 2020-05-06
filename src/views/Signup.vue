@@ -1,6 +1,6 @@
 <template>
   <v-container>
-      <v-alert v-if="error != null" dense outlined type="error">{{error.msg}}</v-alert>
+    <BaseAlert v-for="alert in alertsarray" :alertobj="alert" :key="alert.id"></BaseAlert>
     <v-row>
       <v-col>
         <h1>Création d'un compte</h1>
@@ -92,8 +92,9 @@ export default {
     formValidity: false
   }),
   computed: {
-	error: function() {
-		return this.$store.getters.error},
+    alertsarray: function() {
+      return this.$store.getters.alerts;
+    }
   },
   methods: {
     signUp() {

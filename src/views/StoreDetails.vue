@@ -1,7 +1,7 @@
 <template>
   <v-container>
-    <v-img height="200" v-if="!store.image" src= "@/assets/missing_image.png" />
-    <v-img height="200" v-if="store.image" :src= store.image />
+    <v-img height="200" v-if="store && store.image" :src="store.image" />
+    <v-img height="200" v-else src="@/assets/missing_image.png" />
     <v-row primary lighten-1>
       <v-col>
         <h1>{{ store.name}}</h1>
@@ -18,14 +18,6 @@
     <v-row>
       <v-col>
         <v-form ref="BookingForm" v-model="formValidity">
-          <v-select
-            prepend-icon="mdi-clock-outline"
-            item-value="value"
-            item-text="display"
-            :items="hours"
-            v-model="bookedTime"
-            label="Heure"
-          ></v-select>
           <v-dialog v-model="dialog" max-width="300px">
             <template v-slot:activator="{ on }">
               <v-text-field
@@ -46,7 +38,15 @@
               </v-card-actions>
             </v-card>
           </v-dialog>
-          <v-btn color="primary" :disabled="!formValidity">Reserver</v-btn>
+          <v-select
+            prepend-icon="mdi-clock-outline"
+            item-value="value"
+            item-text="display"
+            :items="schedule_list"
+            v-model="bookedTime"
+            label="Heure"
+          ></v-select>
+          <v-btn color="primary" @click="book" :disabled="!formValidity">Reserver</v-btn>
         </v-form>
       </v-col>
     </v-row>
@@ -58,11 +58,17 @@ export default {
   props: ["id"],
   data() {
     return {
-      bookedTime:"",
+      bookedTime: null,
       dialog: false,
       date: new Date().toISOString().substr(0, 10),
       dateFormatted: this.formatDate(new Date().toISOString().substr(0, 10)),
       formValidity: false,
+      client_mean_time: 20,
+      client_max: 3,
+      opening_hour: 10,
+      opening_minute: 30,
+      closing_hour: 18,
+      closing_minute: 30,
       hours: [
         {
           disabled: true, // change
@@ -98,9 +104,13 @@ export default {
     loadStoreData(id) {
       this.$store.dispatch("getCompany", id);
     },
-    book(){
-      
-    }
+    book() {
+      this.$store.dispatch("addBooking", {
+        company: this.id,
+        time: this.bookedTime
+      });
+    },
+    generateTime() {}
   },
   watch: {
     date() {
@@ -113,6 +123,42 @@ export default {
     },
     store: function() {
       return this.$store.getters.company;
+    },
+    schedule_list: function() {
+      var list = [];
+      
+      const [year, month, day] = this.date.split("-");
+      var init = new Date(year, month, day);
+      init.setUTCMinutes(this.opening_minute);
+      init.setUTCHours(this.opening_hour);
+
+      var end = new Date(year, month, day);
+      end.setUTCMinutes(this.closing_minute);
+      end.setUTCHours(this.closing_hour);
+      console.log("end time", end.getTime())
+      /*
+      var span_time = new Date();
+      span_time.setTime(0);
+      if (this.client_mean_time > 59) {
+        span_time.setMinutes(this.client_mean_time % 60);
+        span_time.setMinutes(this.client_mean_time / 60);
+      } else {
+        span_time.setMinutes(this.client_mean_time);
+      }*/
+      var span_time = this.client_mean_time*60*1000;
+      console.log("span time", span_time)
+      var temp = new Date(init.getTime());
+      do {
+        var schedule = {
+        disabled: false,
+        value: temp.getTime(),
+        display: `${temp.getHours()}:${temp.getMinutes()}` 
+      };
+        list.push(schedule);
+        console.log("temp time", temp)
+        temp.setTime(temp.getTime() + span_time) ;
+      } while (temp.getTime() < end.getTime());
+      return list;
     }
   },
   beforeMount() {

@@ -36,9 +36,9 @@ export default new Vuex.Store({
     company(state) {
       return state.companies[0];
     },
-    alerts(state){
-      return state.alerts
-    }
+    alerts(state) {
+      return state.alerts;
+    },
   },
   mutations: {
     SET_LOGGED_IN(state, value) {
@@ -61,6 +61,9 @@ export default new Vuex.Store({
     SET_USER_ROLE(state, data) {
       state.user.role.company = data.value;
     },
+    SET_USER_DATA_FROM_DB(state, value) {
+      state.user.data_db = value;
+    },
     SET_ERROR(state, error) {
       state.error = error;
     },
@@ -81,16 +84,21 @@ export default new Vuex.Store({
       storedata.image = value.image;
       state.companies.push(storedata);
     },
-    ADD_ALERT(state, value){
+    ADD_ALERT(state, value) {
       var min = Math.ceil(100);
       var max = Math.floor(999);
-      var randomid = Math.floor(Math.random() * (max - min)) + min
-      var alert = {id: randomid, msg: value.msg, type: value.type, duration: value.duration }
-      state.alerts.push(alert)
+      var randomid = Math.floor(Math.random() * (max - min)) + min;
+      var alert = {
+        id: randomid,
+        msg: value.msg,
+        type: value.type,
+        duration: value.duration,
+      };
+      state.alerts.push(alert);
     },
-    DEL_ALERT(state,value){
-      state.alerts.splice(obj=>obj.id == value)
-    }
+    DEL_ALERT(state, value) {
+      state.alerts.splice((obj) => obj.id == value);
+    },
   },
   actions: {
     // get user from firebase auth
@@ -99,11 +107,13 @@ export default new Vuex.Store({
         .auth()
         .signInWithEmailAndPassword(authData.email, authData.password)
         .then((res) => {
+          var isCompany = false;
           firebase
             .auth()
             .currentUser.getIdTokenResult()
             .then((idTokenRes) => {
-              if (idTokenRes.claims.company) {
+              if (idTokenRes.claims.company == true) {
+                isCompany = true;
                 commit("SET_USER_ROLE", { role: "company", value: true });
               } else {
                 commit("SET_USER_ROLE", { role: "company", value: false });
@@ -113,11 +123,48 @@ export default new Vuex.Store({
           commit("SET_USER_DATA", res.user);
           commit("SET_LOGGED_IN", true);
           router.push({ name: "store" });
+
+          if (isCompany) {
+            // fetch company info
+          } else {
+            firebase
+              .firestore()
+              .collection("clients")
+              .doc(res.user.uid)
+              .get()
+              .then((doc) => {
+                if (!doc.exists) {
+                  commit("ADD_ALERT", {
+                    msg:
+                      "Error while retreiving information about the user. Information is not available in the database",
+                    type: "error",
+                    duration: 4000,
+                  });
+                } else {
+                  commit("SET_USER_DATA_FROM_DB", doc.data());
+                }
+              })
+              .catch((err) => {
+                commit("ADD_ALERT", {
+                  msg: "Error while retreiving information about the user.",
+                  type: "error",
+                  duration: 4000,
+                });
+                console.log(
+                  "Error while retreiving information about the user.",
+                  err
+                );
+              });
+          }
         })
         .catch(function(error) {
           console.log(error);
           commit("SET_ERROR", { msg: error.message, code: error.code });
-          commit("ADD_ALERT", { msg: error.message, type: "error", duration: 4000 });
+          commit("ADD_ALERT", {
+            msg: error.message,
+            type: "error",
+            duration: 4000,
+          });
         });
     },
     createUser({ commit }, userInfo) {
@@ -131,61 +178,109 @@ export default new Vuex.Store({
               displayName: userInfo.name,
             })
             .catch(function(error) {
+              commit("ADD_ALERT", {
+                msg: "Error while saving account information.",
+                type: "error",
+                duration: 4000,
+              });
               console.log(error);
-              commit("SET_ERROR", { msg: error.message, code: error.code });
             });
           // update role on auth service
           addCompanyRole({ email: userInfo.email })
             .then(() => {
-              commit("SET_USER_ROLE", { role: "company", value: true });
+              commit("SET_USER_ROLE", {
+                role: "company",
+                value: userInfo.company,
+              });
             })
             .catch(function(error) {
+              commit("ADD_ALERT", {
+                msg: "Error while updating role associated to the account.",
+                type: "error",
+                duration: 4000,
+              });
               console.log(error);
-              commit("SET_ERROR", { msg: error.message, code: error.code });
             });
-          // load image
-          if (userInfo.logo) {
-            var image_name = userInfo.logo.name;
-            const fr = new FileReader();
-            fr.readAsDataURL(userInfo.logo);
-            fr.addEventListener("load", () => {
-              //var imageUrl = fr.result
-              var imageFile = userInfo.logo; // this is an image file that can be sent to server...
-              storageRef
-                .child(`companies/${image_name}`)
-                .put(imageFile)
-                .then(function() {})
-                .catch((err) => {
-                  console.log("Error while uploading the image", err);
-                });
-            });
-          } else {
-            image_name = "";
-          }
-          // add data on firebase
-          var company_data = {
-            address: userInfo.address,
-            city: userInfo.city,
-            postalcode: userInfo.postalcode,
-            name: userInfo.name,
-            image_name: image_name,
-          };
+          if (userInfo.company === true) {
+            // load image
+            if (userInfo.logo) {
+              var image_name = userInfo.logo.name;
+              const fr = new FileReader();
+              fr.readAsDataURL(userInfo.logo);
+              fr.addEventListener("load", () => {
+                //var imageUrl = fr.result
+                var imageFile = userInfo.logo; // this is an image file that can be sent to server...
+                storageRef
+                  .child(`companies/${image_name}`)
+                  .put(imageFile)
+                  .then(function() {})
+                  .catch((err) => {
+                    commit("ADD_ALERT", {
+                      msg: "Error while uploading the logo image.",
+                      type: "error",
+                      duration: 4000,
+                    });
+                    console.log("Error while uploading the image", err);
+                  });
+              });
+            } else {
+              image_name = "";
+            }
+            // add data on firebase
+            var company_data = {
+              address: userInfo.address,
+              city: userInfo.city,
+              postalcode: userInfo.postalcode,
+              name: userInfo.name,
+              image_name: image_name,
+            };
 
-          firebase
-            .firestore()
-            .collection("companies")
-            .doc(result.user.uid)
-            .set(company_data)
-            .catch((err) => {
-              console.log("Error setting Company info in firestore", err);
-            });
-          commit("SET_USER_DATA", result.user);
-          commit("SET_LOGGED_IN", true);
-          router.push({ name: "store" });
+            firebase
+              .firestore()
+              .collection("companies")
+              .doc(result.user.uid)
+              .set(company_data)
+              .catch((err) => {
+                commit("ADD_ALERT", {
+                  msg: "Error while saving company information in database.",
+                  type: "error",
+                  duration: 4000,
+                });
+                console.log("Error setting Company info in firestore", err);
+              });
+            commit("SET_USER_DATA", result.user);
+            commit("SET_LOGGED_IN", true);
+            router.push({ name: "store" });
+          } else {
+            var client_data = {
+              name: userInfo.name,
+            };
+            firebase
+              .firestore()
+              .collection("clients")
+              .doc(result.user.uid)
+              .set(client_data)
+              .catch((err) => {
+                commit("ADD_ALERT", {
+                  msg: "Error while saving user information in database.",
+                  type: "error",
+                  duration: 4000,
+                });
+                console.log("Error setting client info in firestore", err);
+              });
+            commit("SET_USER_DATA", result.user);
+            commit("SET_LOGGED_IN", true);
+            router.push({ name: "store" });
+          }
         })
         .catch(function(error) {
+          commit("ADD_ALERT", {
+            msg:
+              "Error while creating the account in the authentication system.",
+            type: "error",
+            duration: 4000,
+          });
           console.log(error);
-          commit("SET_ERROR", { msg: error.message, code: error.code });
         });
     },
     signOut({ commit }) {
@@ -195,11 +290,20 @@ export default new Vuex.Store({
         .then(function() {
           commit("RESET_USER_DATA");
           commit("SET_LOGGED_IN", false);
+          commit("ADD_ALERT", {
+            msg: "You have been properly sign out.",
+            type: "info",
+            duration: 4000,
+          });
           // Sign-out successful.
         })
         .catch(function(error) {
+          commit("ADD_ALERT", {
+            msg: "Error while signout.",
+            type: "error",
+            duration: 4000,
+          });
           console.log(error);
-          commit("SET_ERROR", { msg: error.message, code: error.code });
         });
     },
     onChangeErrorFlush({ commit }) {
@@ -376,8 +480,8 @@ export default new Vuex.Store({
         });
       }
     },
-    deleteAlert({commit}, id){
-      commit("DEL_ALERT", id)
+    deleteAlert({ commit }, id) {
+      commit("DEL_ALERT", id);
     },
     deleteAccount() {
       var user = firebase.auth().currentUser;
@@ -385,19 +489,32 @@ export default new Vuex.Store({
         .firestore()
         .collection("companies")
         .doc(user.data().uid)
-        .get().then((doc)=>{
-          if(doc.exists){
+        .get()
+        .then((doc) => {
+          if (doc.exists) {
             if (doc.data().image_name) {
-              storageRef.child(`companies/${doc.data().image_name}`).delete().catch((err)=>{
-                console.log("Error while deleting image assoicated to the account", err)
-              })
+              storageRef
+                .child(`companies/${doc.data().image_name}`)
+                .delete()
+                .catch((err) => {
+                  console.log(
+                    "Error while deleting image assoicated to the account",
+                    err
+                  );
+                });
             }
           }
-        })
+        });
       firebase
         .firestore()
-        .collection("companies").doc(user.data().uid).delete().catch((err)=>{
-          console.log("Error while deleting information concerning the account",err)
+        .collection("companies")
+        .doc(user.data().uid)
+        .delete()
+        .catch((err) => {
+          console.log(
+            "Error while deleting information concerning the account",
+            err
+          );
         });
       user
         .delete()
@@ -407,6 +524,47 @@ export default new Vuex.Store({
         .catch(function(error) {
           console.log("Error while deleting account", error);
           // An error happened.
+        });
+    },
+    addBookmark({ commit }, company_id) {
+      var user = firebase.auth().currentUser;
+      var clientRef = firebase
+        .firestore()
+        .collection("clients")
+        .doc(user.uid);
+      clientRef
+        .update({
+          bookmarks: firebase.firestore.FieldValue.arrayUnion(company_id),
+        })
+        .catch((err) => {
+          commit("ADD_ALERT", {
+            msg: "Error while adding a bookmark.",
+            type: "error",
+            duration: 4000,
+          });
+          console.log("Error while adding a bookmark.", err);
+        });
+    },
+
+    addBooking({ commit }, booking_info) {
+      var user = firebase.auth().currentUser;
+      var booking = {
+        company_id: booking_info.company,
+        schedule: firebase.firestore.Timestamp.fromMillis(booking_info.time),
+      };
+      firebase
+        .firestore()
+        .collection("clients")
+        .doc(user.uid)
+        .collection("bookings")
+        .add(booking)
+        .catch((err) => {
+          commit("ADD_ALERT", {
+            msg: "Error while adding a reservation to user .",
+            type: "error",
+            duration: 4000,
+          });
+          console.log("Error while adding a reservation.", err);
         });
     },
   },

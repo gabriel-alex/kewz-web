@@ -1,7 +1,9 @@
 <template>
+<v-container>
+  <BaseAlert v-for="alert in alertsarray" :alertobj="alert" :key="alert.id"></BaseAlert>
   <v-card width="400" class="mx-auto mt-5">
     <!--<v-alert v-if="error != null" dense outlined type="error" dismissible>{{error.msg}}</v-alert>-->
-    <BaseAlert v-for="alert in alertsarray" :alertobj="alert" :key="alert.id"></BaseAlert>
+    
     
     <v-card-title>
       <h1 class="display-1">Authentification</h1>
@@ -31,6 +33,7 @@
       <v-btn color="success" @click="login">Se connecter</v-btn>
     </v-card-actions>
   </v-card>
+</v-container>
 </template>
 
 <script>
