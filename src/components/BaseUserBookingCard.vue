@@ -39,7 +39,6 @@ export default {
       formatDate(date) {
       if (!date) return null;
       date.toISOString().substr(0, 10)
-      console.log(date.toISOString())
 
       const [year, month, day] = date.toISOString().substr(0, 10).split("-");
       return `${day}/${month}/${year}`;

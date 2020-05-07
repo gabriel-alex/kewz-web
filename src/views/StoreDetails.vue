@@ -102,7 +102,6 @@ export default {
         time: this.bookedTime
       });
     },
-    generateTime() {}
   },
   watch: {
     date() {
@@ -123,26 +122,23 @@ export default {
       var init = new Date(year, month-1, day);
       init.setMinutes(this.opening_minute);
       init.setHours(this.opening_hour);
-      console.log("init", init.toISOString())
 
       var end = new Date( year, month-1, day);
       end.setMinutes(this.closing_minute);
       end.setHours(this.closing_hour);
       
-      var span_time = this.client_mean_time*60*1000;
-      console.log("span time", span_time)
+      var span_time = this.store.client_mean_time*60*1000;
       
       var temp = new Date(init.getTime());
       do {
         var schedule = {
-        disabled: false,
+        disabled: temp.getTime() > new Date() ? false : true,
         value: temp.getTime(),
         display: `${temp.getHours()}:${temp.getMinutes()}` 
       };
         list.push(schedule);
 
         temp.setTime(temp.getTime() + span_time) ;
-        console.log("temp", temp.getTime())
       } while (temp.getTime() < end.getTime());
       return list;
     }
