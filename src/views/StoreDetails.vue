@@ -2,6 +2,7 @@
   <v-container>
     <v-img height="200" v-if="store && store.image" :src="store.image" />
     <v-img height="200" v-else src="@/assets/missing_image.png" />
+    <div v-if="store">
     <v-row primary lighten-1>
       <v-col>
         <h1>{{ store.name}}</h1>
@@ -50,6 +51,14 @@
         </v-form>
       </v-col>
     </v-row>
+    </div>
+    <div v-else>
+      <v-row>
+        <v-col>
+          <Spinner size="large"></Spinner>
+        </v-col>
+      </v-row>
+    </div>
   </v-container>
 </template>
 
@@ -69,23 +78,6 @@ export default {
       opening_minute: 30,
       closing_hour: 18,
       closing_minute: 30,
-      hours: [
-        {
-          disabled: true, // change
-          value: 0,
-          display: "12:00 AM"
-        },
-        {
-          disabled: false, // change
-          value: 1,
-          display: "12:30 AM"
-        },
-        {
-          disabled: false, // change
-          value: 2,
-          display: "1:00 AM"
-        }
-      ]
     };
   },
   methods: {
@@ -135,18 +127,9 @@ export default {
       var end = new Date(year, month, day);
       end.setUTCMinutes(this.closing_minute);
       end.setUTCHours(this.closing_hour);
-      console.log("end time", end.getTime())
-      /*
-      var span_time = new Date();
-      span_time.setTime(0);
-      if (this.client_mean_time > 59) {
-        span_time.setMinutes(this.client_mean_time % 60);
-        span_time.setMinutes(this.client_mean_time / 60);
-      } else {
-        span_time.setMinutes(this.client_mean_time);
-      }*/
+      
       var span_time = this.client_mean_time*60*1000;
-      console.log("span time", span_time)
+
       var temp = new Date(init.getTime());
       do {
         var schedule = {
@@ -155,7 +138,7 @@ export default {
         display: `${temp.getHours()}:${temp.getMinutes()}` 
       };
         list.push(schedule);
-        console.log("temp time", temp)
+
         temp.setTime(temp.getTime() + span_time) ;
       } while (temp.getTime() < end.getTime());
       return list;
