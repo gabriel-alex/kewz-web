@@ -5,7 +5,7 @@
         <v-col
         class="d-flex flex-column"
         v-for="booking in bookings"
-        :key="`booking-${booking.id}`"
+        :key="`booking-${booking.booking_id}`"
       >
         <BaseUserBookingCard :booking="booking"></BaseUserBookingCard>
       </v-col>

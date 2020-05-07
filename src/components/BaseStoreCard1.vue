@@ -9,10 +9,10 @@
       <v-btn text :to="{name : 'storeDetail', params: {id: store.id }}">
         <v-icon>mdi-calendar</v-icon>Réserver
       </v-btn>
-      <v-btn v-if="!user.role.company && store.id in user.data_db.bookmarks" color="orange" text @click="addBookmarks">
+      <v-btn v-if="!user.role.company && user.data_db && user.data_db.bookmarks && user.data_db.bookmarks.includes(store.id)" color="orange" text @click="delBookmark">
         <v-icon>mdi-bookmark</v-icon>
       </v-btn>
-      <v-btn v-if="!user.role.company" text @click="addBookmarks">
+      <v-btn v-else-if="!user.role.company" text @click="addBookmarks">
         <v-icon>mdi-bookmark</v-icon>
       </v-btn>
     </v-card-actions>
@@ -31,6 +31,9 @@ export default {
   methods: {
     addBookmarks() {
       this.$store.dispatch("addBookmark", this.store.id);
+    },
+    delBookmark(){
+      this.$store.dispatch("deleteBookmark", this.store.id)
     }
   },
   computed: {

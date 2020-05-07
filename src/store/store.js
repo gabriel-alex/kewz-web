@@ -68,9 +68,6 @@ export default new Vuex.Store({
     SET_USER_DATA_FROM_DB(state, value) {
       state.user.data_db = value;
     },
-    SET_ERROR(state, error) {
-      state.error = error;
-    },
     ADD_COMPANIES(state, value) {
       var storedata = value.store;
       storedata.id = value.id;
@@ -109,6 +106,17 @@ export default new Vuex.Store({
     FLUSH_BOOKINGS(state) {
       state.user.bookings = [];
     },
+    ADD_BOOKMARK(state, value){
+      if(!state.user.data_db){
+        state.user.data_db = {
+          bookmarks: []
+        }
+      }
+      state.user.data_db.bookmarks.push(value)
+    },
+    DEL_BOOKMARK(state, value){
+      state.user.data_db.bookmarks.splice((obj) => obj.id == value);
+    }
   },
   actions: {
     // get user from firebase auth
@@ -150,6 +158,7 @@ export default new Vuex.Store({
                     type: "error",
                     duration: 4000,
                   });
+                  console.log('User does not exist in Firestore')
                 } else {
                   commit("SET_USER_DATA_FROM_DB", doc.data());
                 }
@@ -169,9 +178,8 @@ export default new Vuex.Store({
         })
         .catch(function(error) {
           console.log(error);
-          commit("SET_ERROR", { msg: error.message, code: error.code });
           commit("ADD_ALERT", {
-            msg: error.message,
+            msg: "error.message",
             type: "error",
             duration: 4000,
           });
@@ -196,7 +204,7 @@ export default new Vuex.Store({
               console.log(error);
             });
           // update role on auth service
-          addCompanyRole({ email: userInfo.email })
+          addCompanyRole({ email: userInfo.email , isCompany: userInfo.company})
             .then(() => {
               commit("SET_USER_ROLE", {
                 role: "company",
@@ -353,7 +361,6 @@ export default new Vuex.Store({
                 })
                 .catch(function(error) {
                   console.log("error while retrieving image ", error);
-                  //commit("SET_ERROR", { msg: error.message, code: error.code });
                   commit("ADD_COMPANY", {
                     id: doc.id,
                     store: doc.data(),
@@ -382,7 +389,11 @@ export default new Vuex.Store({
         .get()
         .then((doc) => {
           if (!doc.exists) {
-            commit("SET_ERROR", { msg: "No such document!", code: "404" });
+            commit("ADD_ALERT", {
+              msg: "Compny does not exist in database.",
+              type: "error",
+              duration: 4000,
+            });
             console.log("No such document!");
           } else {
             if (doc.data().image_name) {
@@ -400,7 +411,11 @@ export default new Vuex.Store({
                 })
                 .catch(function(error) {
                   console.log("Error while retrieving image", error);
-                  //commit("SET_ERROR", { msg: error.message, code: error.code });
+                  /*commit("ADD_ALERT", {
+                    msg: "Error while retrieving image of the company.",
+                    type: "error",
+                    duration: 4000,
+                  });*/
                   commit("ADD_COMPANY", {
                     id: doc.id,
                     store: doc.data(),
@@ -447,17 +462,19 @@ export default new Vuex.Store({
                 .delete()
                 .catch(function(err) {
                   console.log("Error While deleting the previous logo", err);
-                  commit("SET_ERROR", {
-                    msg: "Error while deleting the previous logo",
-                    code: "Firbase error",
+                  commit("ADD_ALERT", {
+                    msg: "Error while deleting the previous logo.",
+                    type: "error",
+                    duration: 4000,
                   });
                 });
             })
             .catch((err) => {
               console.log("Error while uploading the image", err);
-              commit("SET_ERROR", {
-                msg: "Error while uploading the new logo",
-                code: "Firbase error",
+              commit("ADD_ALERT", {
+                msg: "Error while uploading the new logo.",
+                type: "error",
+                duration: 4000,
               });
             });
         });
@@ -470,6 +487,11 @@ export default new Vuex.Store({
         .doc(companyData.uid)
         .update(company_data)
         .catch((err) => {
+          commit("ADD_ALERT", {
+            msg: "Error while updating information about company.",
+            type: "error",
+            duration: 4000,
+          });
           console.log("Error while updating information about company", err);
         });
 
@@ -480,12 +502,22 @@ export default new Vuex.Store({
             displayName: companyData.name,
           })
           .catch((err) => {
+            commit("ADD_ALERT", {
+              msg: "Error while updating user name.",
+              type: "error",
+              duration: 4000,
+            });
             console.log("Error while updating name", err);
           });
       }
 
       if (companyData.email != usr.data.email) {
         user.updateEmail(companyData.email).catch((err) => {
+          commit("ADD_ALERT", {
+            msg: "Error while updating email.",
+            type: "error",
+            duration: 4000,
+          });
           console.log("Error while updating email", err);
         });
       }
@@ -493,7 +525,7 @@ export default new Vuex.Store({
     deleteAlert({ commit }, id) {
       commit("DEL_ALERT", id);
     },
-    deleteAccount() {
+    deleteAccount({commit}) {
       var user = firebase.auth().currentUser;
       firebase
         .firestore()
@@ -507,6 +539,11 @@ export default new Vuex.Store({
                 .child(`companies/${doc.data().image_name}`)
                 .delete()
                 .catch((err) => {
+                  commit("ADD_ALERT", {
+                    msg: "Error while getting information about the company before deleting it.",
+                    type: "error",
+                    duration: 4000,
+                  });
                   console.log(
                     "Error while deleting image assoicated to the account",
                     err
@@ -525,6 +562,11 @@ export default new Vuex.Store({
             "Error while deleting information concerning the account",
             err
           );
+          commit("ADD_ALERT", {
+            msg: "Error while deleting company information from the database.",
+            type: "error",
+            duration: 4000,
+          });
         });
       user
         .delete()
@@ -533,6 +575,11 @@ export default new Vuex.Store({
         })
         .catch(function(error) {
           console.log("Error while deleting account", error);
+          commit("ADD_ALERT", {
+            msg: "Error while deleting user account.",
+            type: "error",
+            duration: 4000,
+          });
           // An error happened.
         });
     },
@@ -545,7 +592,9 @@ export default new Vuex.Store({
       clientRef
         .update({
           bookmarks: firebase.firestore.FieldValue.arrayUnion(company_id),
-        })
+        }).then(
+          commit("ADD_BOOKMARK", company_id)
+        )
         .catch((err) => {
           commit("ADD_ALERT", {
             msg: "Error while adding a bookmark.",
@@ -555,9 +604,30 @@ export default new Vuex.Store({
           console.log("Error while adding a bookmark.", err);
         });
     },
-
+    deleteBookmark({commit}, company_id){
+      var user = firebase.auth().currentUser;
+      var clientRef = firebase
+        .firestore()
+        .collection("clients")
+        .doc(user.uid);
+      clientRef
+        .update({
+          bookmarks: firebase.firestore.FieldValue.arrayRemove(company_id),
+        }).then(
+          commit("DEL_BOOKMARK", company_id)
+        )
+        .catch((err) => {
+          commit("ADD_ALERT", {
+            msg: "Error while deleting a bookmark.",
+            type: "error",
+            duration: 4000,
+          });
+          console.log("Error while deleting a bookmark.", err);
+        });
+    },
     addBooking({ commit }, booking_info) {
       var user = firebase.auth().currentUser;
+      console.log("bookedtime", booking_info.time)
       var user_booking = {
         company_id: booking_info.company,
         schedule: firebase.firestore.Timestamp.fromMillis(booking_info.time),
@@ -676,7 +746,7 @@ export default new Vuex.Store({
           duration: 4000,
         });
       });
-      router.push({ name: "queues" } )
+      router.go()
     }
   },
 });

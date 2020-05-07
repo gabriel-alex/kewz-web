@@ -120,16 +120,18 @@ export default {
       var list = [];
       
       const [year, month, day] = this.date.split("-");
-      var init = new Date(year, month, day);
-      init.setUTCMinutes(this.opening_minute);
-      init.setUTCHours(this.opening_hour);
+      var init = new Date(year, month-1, day);
+      init.setMinutes(this.opening_minute);
+      init.setHours(this.opening_hour);
+      console.log("init", init.toISOString())
 
-      var end = new Date(year, month, day);
-      end.setUTCMinutes(this.closing_minute);
-      end.setUTCHours(this.closing_hour);
+      var end = new Date( year, month-1, day);
+      end.setMinutes(this.closing_minute);
+      end.setHours(this.closing_hour);
       
       var span_time = this.client_mean_time*60*1000;
-
+      console.log("span time", span_time)
+      
       var temp = new Date(init.getTime());
       do {
         var schedule = {
@@ -140,6 +142,7 @@ export default {
         list.push(schedule);
 
         temp.setTime(temp.getTime() + span_time) ;
+        console.log("temp", temp.getTime())
       } while (temp.getTime() < end.getTime());
       return list;
     }

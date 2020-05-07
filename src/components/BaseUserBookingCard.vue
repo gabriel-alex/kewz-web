@@ -7,7 +7,7 @@
           <v-row class="pa-0 mb-0"
             no-gutters
             justify="center"
-          >{{ booking.schedule.getDay() }}/{{ booking.schedule.getMonth() }}/{{ booking.schedule.getYear() }} - {{ booking.schedule.getHours() }} : {{ booking.schedule.getMinutes() }}</v-row>
+          >{{ formatDate(booking.schedule) }} - {{ booking.schedule.getHours() }} : {{ booking.schedule.getMinutes() }}</v-row>
         </v-col>
         <v-col cols="10" sm="8" class="flex" align="center">
           <v-row dense>
@@ -36,6 +36,14 @@ export default {
     }
   },
   methods: {
+      formatDate(date) {
+      if (!date) return null;
+      date.toISOString().substr(0, 10)
+      console.log(date.toISOString())
+
+      const [year, month, day] = date.toISOString().substr(0, 10).split("-");
+      return `${day}/${month}/${year}`;
+    },
     deleteBooking() {
       this.$store.dispatch("deleteBooking", this.booking);
     }

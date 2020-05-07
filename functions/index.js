@@ -8,7 +8,7 @@ exports.addCompanyRole = functions.https.onCall((data, context) => {
     .auth()
     .getUserByEmail(data.email)
     .then((user) => {
-      return admin.auth().setCustomUserClaims(user.uid, { company: true });
+      return admin.auth().setCustomUserClaims(user.uid, { company: data.isCompany });
     }).then(()=> {
         return{
             message: `Success! ${data.email} has been made a company`
