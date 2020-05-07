@@ -548,8 +548,12 @@ export default new Vuex.Store({
 
     addBooking({ commit }, booking_info) {
       var user = firebase.auth().currentUser;
-      var booking = {
+      var user_booking = {
         company_id: booking_info.company,
+        schedule: firebase.firestore.Timestamp.fromMillis(booking_info.time),
+      };
+      var company_booking = {
+        user_id: user.uid,
         schedule: firebase.firestore.Timestamp.fromMillis(booking_info.time),
       };
       firebase
@@ -557,14 +561,24 @@ export default new Vuex.Store({
         .collection("clients")
         .doc(user.uid)
         .collection("bookings")
-        .add(booking)
+        .add(user_booking)
         .catch((err) => {
           commit("ADD_ALERT", {
-            msg: "Error while adding a reservation to user .",
+            msg: "Error while adding a reservation to user information.",
             type: "error",
             duration: 4000,
           });
-          console.log("Error while adding a reservation.", err);
+          console.log("Error while adding a reservation to user db.", err);
+        });
+      firebase.firestore().collection("companies").doc(booking_info.company).collection("bookings").add(company_booking).then(
+        router.push({ name: "queues" })
+        ).catch((err) => {
+          commit("ADD_ALERT", {
+            msg: "Error while adding a reservation to company information.",
+            type: "error",
+            duration: 4000,
+          });
+          console.log("Error while adding a reservation to company db.", err);
         });
     },
   },
