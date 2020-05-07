@@ -18,6 +18,7 @@ export default new Vuex.Store({
       loggedIn: false,
       data: null,
       role: {},
+      bookings: []
     },
   },
   getters: {
@@ -39,6 +40,9 @@ export default new Vuex.Store({
     alerts(state) {
       return state.alerts;
     },
+    bookings(state){
+      return state.user.bookings;
+    }
   },
   mutations: {
     SET_LOGGED_IN(state, value) {
@@ -98,6 +102,12 @@ export default new Vuex.Store({
     },
     DEL_ALERT(state, value) {
       state.alerts.splice((obj) => obj.id == value);
+    },
+    ADD_BOOKING(state, value){
+      state.user.bookings.push(value)
+    },
+    FLUSH_BOOKINGS(state) {
+      state.user.bookings = [];
     },
   },
   actions: {
@@ -561,7 +571,18 @@ export default new Vuex.Store({
         .collection("clients")
         .doc(user.uid)
         .collection("bookings")
-        .add(user_booking)
+        .add(user_booking).then(ref=>{
+          firebase.firestore().collection("companies").doc(booking_info.company).collection("bookings").doc(ref.id).set(company_booking).then(
+            router.push({ name: "queues" })
+            ).catch((err) => {
+              commit("ADD_ALERT", {
+                msg: "Error while adding a reservation to company information.",
+                type: "error",
+                duration: 4000,
+              });
+              console.log("Error while adding a reservation to company db.", err);
+            });
+        })
         .catch((err) => {
           commit("ADD_ALERT", {
             msg: "Error while adding a reservation to user information.",
@@ -570,16 +591,92 @@ export default new Vuex.Store({
           });
           console.log("Error while adding a reservation to user db.", err);
         });
-      firebase.firestore().collection("companies").doc(booking_info.company).collection("bookings").add(company_booking).then(
-        router.push({ name: "queues" })
-        ).catch((err) => {
-          commit("ADD_ALERT", {
-            msg: "Error while adding a reservation to company information.",
-            type: "error",
-            duration: 4000,
-          });
-          console.log("Error while adding a reservation to company db.", err);
-        });
+      
     },
+    getUserBookings({commit}){
+      var userIsCompany = false
+      var user = firebase.auth().currentUser;
+      user.getIdTokenResult()
+            .then((idTokenRes) => {
+              if (idTokenRes.claims.company == true) {
+                userIsCompany = true;
+              }
+            });
+            if(userIsCompany){
+              firebase.firestore().collection("companies").doc(user.uid).collection("bookings").get().then((snapshot) => {
+                commit("FLUSH_BOOKINGS")
+                snapshot.forEach((doc) => {
+                  var company_booking = {
+                    company_id : user.uid,
+                    booking_id : doc.id,
+                    client_id : doc.data().client_id,
+                    schedule : doc.data().schedule,
+                  }
+                  commit("ADD_BOOKING", company_booking)
+                })
+              }).catch((err)=>{
+                commit("ADD_ALERT", {
+                  msg: "Error while retrieving bookings from the company.",
+                  type: "error",
+                  duration: 4000,
+                });
+                console.log("Error while retrieving bookings from the company.", err);
+              })
+            }else{
+              firebase.firestore().collection("clients").doc(user.uid).collection("bookings").where('schedule','>',firebase.firestore.Timestamp.now()).orderBy('schedule').get().then((snapshot) => {
+                commit("FLUSH_BOOKINGS")
+                var companiesRef = firebase.firestore().collection("companies")
+                snapshot.forEach((client_doc) => {
+                  companiesRef.doc(client_doc.data().company_id).get().then((company_doc)=>{
+                    var user_booking = {
+                      client_id: user.uid,
+                      booking_id: client_doc.id,
+                      company_id : client_doc.data().company_id,
+                      schedule : new Date(client_doc.data().schedule.seconds*1000),
+                      company_name : company_doc.data().name,
+                      company_address: company_doc.data().address,
+                      company_city: company_doc.data().city,
+                      company_postalcode: company_doc.data().postalcode,
+                    }
+                    commit("ADD_BOOKING", user_booking)
+                  }).catch((err)=>{
+                    commit("ADD_ALERT", {
+                      msg: "Error while retrieving company info from user booking.",
+                      type: "error",
+                      duration: 4000,
+                    });
+                    console.log("Error while retrieving company info from user bookings.", err);
+                  })
+                  
+                })
+              }).catch((err)=>{
+                commit("ADD_ALERT", {
+                  msg: "Error while retrieving bookings from the client.",
+                  type: "error",
+                  duration: 4000,
+                });
+                console.log("Error while retrieving bookings from the client.", err);
+              })
+            }
+    },
+    deleteBooking({commit}, booking){
+      firebase.firestore().collection("companies").doc(booking.company_id).collection("bookings").doc(booking.booking_id).delete().catch(function(err) {
+        console.log("Error while deleting booking from companies information", err);
+        commit("ADD_ALERT", {
+          msg: "Error while deleting booking from companies information.",
+          type: "error",
+          duration: 4000,
+        });
+      });
+      firebase.firestore().collection("clients").doc(booking.client_id).collection("bookings").doc(booking.booking_id).delete().catch(function(err) {
+        console.log("Error while deleting booking from users information", err);
+        commit("ADD_ALERT", {
+          msg: "Error while deleting booking from users information.",
+          type: "error",
+          duration: 4000,
+        });
+      });
+      router.push({ name: "queues" } )
+    }
   },
 });

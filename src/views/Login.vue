@@ -8,8 +8,9 @@
     <v-card-title>
       <h1 class="display-1">Authentification</h1>
     </v-card-title>
+    <v-form @submit.prevent="login">
     <v-card-text>
-      <v-form>
+      
         <v-text-field
           v-model="email"
           :rules="emailRules"
@@ -24,14 +25,15 @@
           :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
           @click:append="showPassword = !showPassword"
         />
-      </v-form>
+      
     </v-card-text>
     <v-divider></v-divider>
     <v-card-actions>
       <v-btn color="info" :to="{name: 'signup'}">Créer un compte</v-btn>
       <v-spacer></v-spacer>
-      <v-btn color="success" @click="login">Se connecter</v-btn>
+      <v-btn type="submit" color="success">Se connecter</v-btn>
     </v-card-actions>
+    </v-form>
   </v-card>
 </v-container>
 </template>

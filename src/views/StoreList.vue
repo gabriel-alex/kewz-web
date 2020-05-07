@@ -18,8 +18,6 @@
 </template>
 
 <script>
-//import StoreCard1 from "../components/StoreCard1";
-
 export default {
   computed: {
     stores: function() {
